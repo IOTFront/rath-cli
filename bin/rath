@@ -1,0 +1,81 @@
+#! /usr/bin/env node
+
+const path = require('path')
+const { spawnSync } = require('child_process')
+const program = require('commander')
+const Util = require('../libs/utils')
+
+const App = require('../libs/create/task/app')
+// const Component = require('../libs/create/task/component')
+
+
+const userHome = Util.homedir()
+const userName = process.env.USER || path.basename(userHome)
+
+program.version('0.0.1')
+  .usage('[options] <file ...>')
+
+program
+	.command('help')
+  .description('显示使用帮助')
+  .action(function () {
+    program.outputHelp()
+  })
+
+program
+  .command('init')
+
+program
+  .command('app [appName]')
+  .alias('a')
+  .description('创建一个项目')
+  .option('--description [appDescription]', '项目描述')
+  .option('--react', '创建react项目')
+  .option('--vue', '创建vue项目')
+  .action((appName, option) => {
+    const app = new App(appName, option)
+  })
+
+program
+  .command('component [componentName]')
+  .alias('c')
+  .description('创建一个组件')
+  .option('-s, --sass', '使用sass')
+  .option('-l, --less', '使用less')
+  .action(function (componentName, option) {
+    // const component = new Component({
+    //   componentName: componentName,
+    //   description: option.description,
+    //   sass: option.sass,
+    //   less: option.less
+    // })
+    // component.create(() => {
+    //   console.log(chalk.green('组件创建成功～'))
+    // })
+  })
+
+program
+  .command('start', '本地启动')
+  .action(() => {
+    const child = spawnSync('node', [require.resolve('../libs/scripts/start.js')], {stdio: 'inherit'})
+    child.on('error', (err) => {
+      console.log('启动失败，请稍后再试～')
+    })
+    process.exit()
+  })
+
+program
+  .command('build', '编译')
+  .action(() => {
+    spawnSync('node', [require.resolve('../libs/scripts/build.js')], {stdio: 'inherit'})
+    process.exit()
+  })
+
+program
+  .command('deploy', '发布上线')
+  .action(() => {
+    spawnSync('node', [require.resolve('../libs/scripts/deploy.js')], {stdio: 'inherit'})
+    process.exit()
+  })
+
+program.parse(process.argv)
